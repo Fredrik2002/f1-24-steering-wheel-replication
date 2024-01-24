@@ -6,7 +6,9 @@ from matplotlib import transforms
 import matplotlib.patches as patches
 import numpy as np
 from math import cos, sin, pi
+from numpy import arctan
 from parser2023 import Listener
+from LED import LED
 
 #gear, speed, lap_number, rpm, lap_time, SOC
 angle_offset = [pi/2, 
@@ -39,7 +41,7 @@ def conversion(millis):
 
 class RotationApp:
     def __init__(self, master : tk.Tk):
-        self.listener = Listener(port=20778)
+        self.listener = Listener(port=20777)
 
         self.master = master
         self.master.title("Rotation d'éléments en 2D")
@@ -61,6 +63,7 @@ class RotationApp:
         self.ers_mode = 1
         self.brake_bias = "50%"
         self.labels = [self.angle, self.gear, self.speed, self.rpm, self.last_lap_time]
+        self.list_cercles : list[LED] = []
 
         self.plot_elements()
 
@@ -97,7 +100,7 @@ class RotationApp:
         self.speed = packet.m_car_telemetry_data[self.index].m_speed
         self.rpm = packet.m_car_telemetry_data[self.index].m_engine_rpm
         self.revLightPercent = packet.m_car_telemetry_data[self.index].m_rev_lights_percent
-        self.revLightBitValue = packet.m_car_telemetry_data[self.index].m_rev_lights_bit_value
+        self.revLightBitValue = bin(packet.m_car_telemetry_data[self.index].m_rev_lights_bit_value)
         if self.gear == 0:
             self.gear = "N"
         elif self.gear == -1:
@@ -130,9 +133,18 @@ class RotationApp:
         else:
             self.rectangle_vert.set_width((self.ers_pourcentage-35)*0.39/65)
             self.rectangle_rouge.set_width(0.21)
-        print(self.ers_pourcentage)
         self.rectangle_rouge.set_transform(trans_rouge + self.ax.transData)
         self.rectangle_vert.set_transform(trans_vert + self.ax.transData)
+        l = len(self.revLightBitValue)
+        print(l, self.revLightBitValue)
+
+        for i, circle in enumerate(self.list_cercles):
+            if i+2>=l or self.revLightBitValue[i+2]==0:
+                circle.set_visible(False)
+            else:
+                r, a = circle.r, circle.init_angle
+                circle.set_center((r*cos(angle_r+a), r*sin(angle_r+a)))
+                circle.set_visible(True)
 
         self.canvas.draw()
 
@@ -154,6 +166,14 @@ class RotationApp:
         self.rectangle_vert = patches.Rectangle((-0.09, 0.15), 0.39, 0.04, linewidth=0, facecolor='green')
         self.ax.add_patch(self.rectangle_rouge)
         self.ax.add_patch(self.rectangle_vert)
+
+        for i in range(15):
+            if i<=4: color = "green"
+            elif i<=9: color = "red"
+            else: color = "blue"
+            circle = LED(-0.30+i*0.0435, 0.56, color)
+            self.list_cercles.append(circle)
+            self.ax.add_patch(circle)
 
 
         self.ax.set_xlim(-1,1)
