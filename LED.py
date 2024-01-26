@@ -1,4 +1,5 @@
 import matplotlib.patches as patches
+from matplotlib.text import Text
 from numpy import arctan
 from math import pi, sqrt
 
@@ -20,3 +21,14 @@ class LED(patches.Circle):
     
     def __repr__(self):
         return self.color
+    
+
+class Custom_Text(Text):
+    def __init__(self, x, y, label, size, c):
+        super().__init__(x, y, label, fontsize=size, color=c, ha='center', va='center')
+        self.init_angle = -arctan(x/y)+pi/2
+        self.x = x
+        self.y = y
+        self.label = label
+        self.color = c
+        self.r = sqrt(x**2 + y**2)
