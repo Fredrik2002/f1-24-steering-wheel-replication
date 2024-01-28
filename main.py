@@ -1,5 +1,6 @@
 import tkinter as tk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from ttkbootstrap import Menu
 from matplotlib.figure import Figure
 import matplotlib.image as mpimg
 from matplotlib import transforms
@@ -11,30 +12,62 @@ from numpy import arctan
 from parser2023 import Listener
 from LED import *
 from packet_management import *
+from PIL import ImageTk, Image
+import os
+from os.path import exists
+import sys
 
 
 CENTRE_ROUGE = (0.195, 0.17)
 CENTRE_VERT = (0.3, 0.17)
 
+script_directory = os.path.dirname(os.path.abspath(sys.argv[0]))
+if exists(script_directory+"/settings.txt"):
+    try:
+        with open(script_directory+"/settings.txt", "r") as f:
+            dictionnary_settings = json.load(f)
+    except Exception as e:
+        print(e)
+        choice = input("Unable to read settings.txt, do you want to recreate settings.txt and start the program ? [Y|n]")
+        if choice in ["n", "N"]:
+            print("Aborting to recreate settings.txt, try to fix it by yourself, or simply delete settings.txt")
+            exit(-1)
+        else:
+            print("Listening on default port 20777 and recreating settings.txt")
+            dictionnary_settings = {"port":20777}
+            with open(script_directory+"/settings.txt", "w") as f:
+                json.dump(dictionnary_settings, f)
+else: #If settings.txt has been deleted, we recreate it
+    dictionnary_settings = {"port":20777}
+    with open(script_directory+"/settings.txt", "w") as f:
+        json.dump(dictionnary_settings, f)
 
 
 class RotationApp:
     def __init__(self, master : tk.Tk):
-        self.listener = Listener(port=20777)
+        self.PORT = [dictionnary_settings['port']]
+        self.listener = Listener(port=int(self.PORT[0]))
 
         self.master = master
         self.master.title("Rotation d'éléments en 2D")
 
-        self.master.geometry("1080x600") 
+        #self.master.geometry("1080x600") 
         #self.master.resizable(width=False, height=False)
         self.master.protocol("WM_DELETE_WINDOW", self.close_window)
 
-        self.fig = Figure(figsize=(10, 5), dpi=100)
+        self.fig = Figure(figsize=(12,7), dpi=100)
         self.ax = self.fig.add_subplot(111)
+        self.ax.axis('off')
 
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.master)
         self.canvas.draw()
         self.canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
+
+        menubar = Menu(self.master)
+        filemenu = Menu(menubar, tearoff=0)
+        filemenu.add_command(label="PORT Selection", command=lambda : port_selection(dictionnary_settings, self.listener, self.PORT))
+        menubar.add_cascade(label="Settings", menu=filemenu)
+        self.master.config(menu=menubar)
 
         self.list_text_elements = []
 
@@ -132,7 +165,7 @@ class RotationApp:
 
     def plot_elements(self):
         # Ajouter une image
-        self.img_path = 'wheel.png' 
+        self.img_path = script_directory+'/wheel.png' 
         self.img = mpimg.imread(self.img_path)
         self.img_plot = self.ax.imshow(self.img, extent=(-1, 1, -0.634, 0.634), origin='upper')
 
@@ -163,7 +196,7 @@ class RotationApp:
             if i<=4: color = "green"
             elif i<=9: color = "red"
             else: color = "blue"
-            circle = LED(-0.30+i*0.0435, 0.56, color)
+            circle = LED(*LED_positions[i], color)
             self.list_cercles.append(circle)
             self.ax.add_patch(circle)
 
