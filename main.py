@@ -82,10 +82,12 @@ class RotationApp:
         self.tyres_temp = [100]*4
         self.lap_num = 0
         self.sc_delta = 0
-        self.revLightBitValue = "0"
+        #self.revLightBitValue = "0b110000001111111"
+        self.revLightBitValue = "0b0"
         self.list_cercles : list[LED] = []
 
         self.plot_elements()
+        self.rotate()
 
         self.loop()
 
@@ -117,13 +119,8 @@ class RotationApp:
         
     def rotate(self):
         angle_r = np.radians(self.angle)
-        for text in self.list_text_elements:
-            theta, r = text.init_angle, text.r
-            text.set_text(text.label)
-            text.set_position((r*cos(angle_r+theta), r*sin(angle_r+theta)))
-            text.set_rotation(self.angle)
 
-        # Mise à jour de la transformation pour la rotation
+        # Steering wheel
         self.img_plot.remove()
         tr = transforms.Affine2D().rotate(angle_r)
         self.img_plot = self.ax.imshow(self.img, transform=tr + self.ax.transData, extent=(-1, 1, -0.634, 0.634))
@@ -144,7 +141,7 @@ class RotationApp:
 
         #REV Lights
         for i, circle in enumerate(self.list_cercles):
-            if i+2>=l or self.revLightBitValue[i+2]==0:
+            if i>=l or self.revLightBitValue[-1-i]=="0":
                 circle.set_visible(False)
             else:
                 r, a = circle.r, circle.init_angle
@@ -156,10 +153,18 @@ class RotationApp:
             self.list_text_elements[7].color = "green"
         elif self.sc_delta == 0:
             self.list_text_elements[7].color = "#88D7FF"
-            self.sc_delta ="+"+str(self.sc_delta)
+            self.sc_delta ="+"+str(abs(self.sc_delta))
         else:
             self.list_text_elements[7].color = "red"
             self.sc_delta ="+"+str(self.sc_delta)
+        self.list_text_elements[7].label = self.sc_delta
+
+        #Dashboard
+        for text in self.list_text_elements:
+            theta, r = text.init_angle, text.r
+            text.set_text(text.label)
+            text.set_position((r*cos(angle_r+theta), r*sin(angle_r+theta)))
+            text.set_rotation(self.angle)
 
         self.canvas.draw()
 

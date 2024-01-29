@@ -15,15 +15,20 @@ class Listener:
         self.redirect = redirect
         self.redirect_port = redirect_port
 
+    def reset(self):
+        self.socket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
+        self.socket.bind(('', self.port))
+        self.socket.setblocking(0)
+
     def get(self, packet=None):
         if packet is None:
             try:
                 packet = self.socket.recv(2048)
                 if self.redirect == 1:
                     self.socket.sendto(packet, (self.address, self.redirect_port))
-            except ConnectionResetError: #Thrown when redirecting on a localhost port that does not read the datas
+            except ConnectionResetError as e: #Thrown when redirecting on a localhost port that does not read the datas
                 return None
-            except:
+            except Exception as e:
                 return None
 
         header = PacketHeader.from_buffer_copy(packet)

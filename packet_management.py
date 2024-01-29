@@ -23,10 +23,9 @@ def packet_telemetry_management(self, packet):
     self.speed = packet.m_car_telemetry_data[self.index].m_speed
     self.rpm = packet.m_car_telemetry_data[self.index].m_engine_rpm
     self.revLightPercent = packet.m_car_telemetry_data[self.index].m_rev_lights_percent
-    self.revLightBitValue = bin(packet.m_car_telemetry_data[self.index].m_rev_lights_bit_value)
+    self.revLightBitValue = bin(packet.m_car_telemetry_data[self.index].m_rev_lights_bit_value)[2:]
     self.tyres_temp = packet.m_car_telemetry_data[self.index].m_tyres_inner_temperature
     
-
 def packet_car_status_management(self, packet):
     self.ers_pourcentage = round(packet.m_car_status_data[self.index].m_ers_store_energy/40_000)
     self.ers_mode = packet.m_car_status_data[self.index].m_ers_deploy_mode
@@ -40,7 +39,6 @@ def update_labels(self):
     self.labels = [self.gear, self.speed, self.lap_num, self.rpm, conversion(self.last_lap_time), self.brake_bias, self.ers_mode, self.sc_delta]+self.tyres_temp[:]
     for i,element in enumerate(self.list_text_elements):
         element.label = self.labels[i]
-
 
 def conversion(millis):
     seconds, millis = millis // 1000, millis%1000
@@ -75,6 +73,7 @@ def port_selection(dictionnary_settings, listener, PORT):
         else:
             listener.socket.close()
             listener.port = int(PORT[0])
+            listener.reset()
             Label(win, text="").grid(row=3, column=0)
             dictionnary_settings["port"] = str(PORT[0])
             with open(script_directory+"/settings.txt", "w") as f:
