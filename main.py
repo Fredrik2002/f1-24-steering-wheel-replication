@@ -7,15 +7,14 @@ from matplotlib import transforms
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
 import numpy as np
-from math import cos, sin, pi
-from numpy import arctan
+from math import cos, sin
 from parser2023 import Listener
 from LED import *
 from packet_management import *
-from PIL import ImageTk, Image
 import os
 from os.path import exists
 import sys
+import time
 
 
 CENTRE_ROUGE = (0.195, 0.17)
@@ -51,9 +50,10 @@ class RotationApp:
         self.master = master
         self.master.title("Rotation d'éléments en 2D")
 
-        #self.master.geometry("1080x600") 
-        #self.master.resizable(width=False, height=False)
+        self.master.geometry("600x600")
+        self.master.minsize(400,400) 
         self.master.protocol("WM_DELETE_WINDOW", self.close_window)
+        self.master.bind("<Configure>", self.on_resize)
 
         self.fig = Figure(figsize=(12,7), dpi=100)
         self.ax = self.fig.add_subplot(111)
@@ -69,6 +69,8 @@ class RotationApp:
         menubar.add_cascade(label="Settings", menu=filemenu)
         self.master.config(menu=menubar)
 
+        self.font_scale = 1
+
         self.list_text_elements = []
 
         self.angle = 0 
@@ -78,18 +80,22 @@ class RotationApp:
         self.last_lap_time = 0
         self.ers_pourcentage = 100
         self.ers_mode = 1
-        self.brake_bias = "50%"
+        self.brake_bias = "55%"
         self.tyres_temp = [100]*4
         self.lap_num = 0
         self.sc_delta = 0
-        #self.revLightBitValue = "0b110000001111111"
-        self.revLightBitValue = "0b0"
+        self.revLightBitValue = "111111111111111"
         self.list_cercles : list[LED] = []
 
         self.plot_elements()
         self.rotate()
 
         self.loop()
+    
+    def on_resize(self, e):
+        print(e, e.width)
+        self.font_scale = 0.0015*min(e.width, e.height)+0.1
+        
 
     def close_window(self):
         plt.close()
@@ -149,7 +155,7 @@ class RotationApp:
                 circle.set_visible(True)
 
         #Delta
-        if self.sc_delta<0:
+        if self.sc_delta>0:
             self.list_text_elements[7].color = "green"
         elif self.sc_delta == 0:
             self.list_text_elements[7].color = "#88D7FF"
@@ -162,9 +168,11 @@ class RotationApp:
         #Dashboard
         for text in self.list_text_elements:
             theta, r = text.init_angle, text.r
+            text.set_fontsize(text.size*self.font_scale)
             text.set_text(text.label)
             text.set_position((r*cos(angle_r+theta), r*sin(angle_r+theta)))
             text.set_rotation(self.angle)
+            text.set_color(text.color)
 
         self.canvas.draw()
 

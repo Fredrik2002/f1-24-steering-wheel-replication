@@ -49,4 +49,5 @@ class Custom_Text(Text):
         self.y = y
         self.label = label
         self.color = c
+        self.size = size
         self.r = sqrt(x**2 + y**2)

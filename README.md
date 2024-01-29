@@ -16,8 +16,7 @@ This application replicates the movement of the driver's steering wheel
     - ERS Deployment mode
     - All 4 tyres inner temperature 
 - Setting tab to select the port you are receiving the datas on
+- Font size adjustating to the window size
 
 ### To do list :
-- Make the steering wheel take all the available space on the window
 - Add flags state on side LEDs
-- Adjustable font size depending on window size 
