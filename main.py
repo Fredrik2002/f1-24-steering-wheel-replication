@@ -33,7 +33,7 @@ if exists(script_directory+"/settings.txt"):
             exit(-1)
         else:
             print("Listening on default port 20777 and recreating settings.txt")
-            dictionnary_settings = {"port":20777}
+            dictionnary_settings = {"port": "20777", "redirect_active": 0, "ip_adress": "127.0.0.1", "redirect_port": "20778"}
             with open(script_directory+"/settings.txt", "w") as f:
                 json.dump(dictionnary_settings, f)
 else: #If settings.txt has been deleted, we recreate it
@@ -48,7 +48,7 @@ class RotationApp:
         self.listener = Listener(port=int(self.PORT[0]))
 
         self.master = master
-        self.master.title("Rotation d'éléments en 2D")
+        self.master.title("SF-23 Steering Wheel Replication")
 
         self.master.geometry("600x600")
         self.master.minsize(400,400) 
@@ -65,7 +65,8 @@ class RotationApp:
 
         menubar = Menu(self.master)
         filemenu = Menu(menubar, tearoff=0)
-        filemenu.add_command(label="PORT Selection", command=lambda : port_selection(dictionnary_settings, self.listener, self.PORT))
+        filemenu.add_command(label="PORT Selection", command=lambda : port_selection(dictionnary_settings, self))
+        filemenu.add_command(label="UDP Redirect", command=lambda : UDP_Redirect(dictionnary_settings, self))
         menubar.add_cascade(label="Settings", menu=filemenu)
         self.master.config(menu=menubar)
 
@@ -85,18 +86,36 @@ class RotationApp:
         self.lap_num = 0
         self.sc_delta = 0
         self.revLightBitValue = "111111111111111"
+        self.vehicleFiaFlag = 0
         self.list_cercles : list[LED] = []
+        self.side_leds : list[LED] = []
 
         self.plot_elements()
         self.rotate()
 
         self.loop()
-    
-    def on_resize(self, e):
-        print(e, e.width)
-        self.font_scale = 0.0015*min(e.width, e.height)+0.1
-        
 
+    def reset(self):
+        self.angle = 0 
+        self.rpm = 0  
+        self.speed = 0  
+        self.gear = 0 
+        self.last_lap_time = 0
+        self.ers_pourcentage = 100
+        self.ers_mode = 1
+        self.brake_bias = "55%"
+        self.tyres_temp = [100]*4
+        self.lap_num = 0
+        self.sc_delta = 0
+        self.revLightBitValue = "111111111111111"
+        self.vehicleFiaFlag = 0
+
+        self.rotate()
+
+    def on_resize(self, e):
+        self.font_scale = 0.0015*min(e.width, e.height)+0.1
+        self.rotate()
+        
     def close_window(self):
         plt.close()
         self.master.destroy()
@@ -124,6 +143,7 @@ class RotationApp:
         
         
     def rotate(self):
+        update_labels(self)
         angle_r = np.radians(self.angle)
 
         # Steering wheel
@@ -154,16 +174,27 @@ class RotationApp:
                 circle.set_center((r*cos(angle_r+a), r*sin(angle_r+a)))
                 circle.set_visible(True)
 
+        #Side LEDs
+        
+        for i, circle in enumerate(self.side_leds):
+            if self.vehicleFiaFlag==0:
+                circle.set_visible(False)
+            else:
+                r, a = circle.r, circle.init_angle
+                circle.set_visible(True)
+                circle.set_center((r*cos(angle_r+a), r*sin(angle_r+a)))
+                circle.set_color(color_dict[self.vehicleFiaFlag])
+
+
         #Delta
         if self.sc_delta>0:
             self.list_text_elements[7].color = "green"
+            self.list_text_elements[7].label ="+"+str(abs(self.sc_delta))
         elif self.sc_delta == 0:
             self.list_text_elements[7].color = "#88D7FF"
-            self.sc_delta ="+"+str(abs(self.sc_delta))
+            self.list_text_elements[7].label ="+"+str(abs(self.sc_delta))
         else:
             self.list_text_elements[7].color = "red"
-            self.sc_delta ="+"+str(self.sc_delta)
-        self.list_text_elements[7].label = self.sc_delta
 
         #Dashboard
         for text in self.list_text_elements:
@@ -189,7 +220,7 @@ class RotationApp:
         self.list_text_elements.append(Custom_Text(-0.22,0.45,"1:30:530", 8, '#88FFA3')) # Previous lap time
         self.list_text_elements.append(Custom_Text(0.25,0.35,"50%", 12, '#88D7FF')) # Brake bias
         self.list_text_elements.append(Custom_Text(0.25,0.27,"1", 12, '#88D7FF')) # ERS Mode
-        self.list_text_elements.append(Custom_Text(0.23,0.45,"+0.0", 12, '#88D7FF')) # Safety Car Delta
+        self.list_text_elements.append(Custom_Text(0.23,0.45,0, 12, '#88D7FF')) # Safety Car Delta
 
         self.list_text_elements.append(Custom_Text(-0.13,0.27,"100",10, 'red')) # RL
         self.list_text_elements.append(Custom_Text(0.11,0.27,"100",10, 'red')) # RR
@@ -211,6 +242,11 @@ class RotationApp:
             else: color = "blue"
             circle = LED(*LED_positions[i], color)
             self.list_cercles.append(circle)
+            self.ax.add_patch(circle)
+
+        for i in range(6):
+            circle = LED(*side_leds_positions[i], "yellow")
+            self.side_leds.append(circle)
             self.ax.add_patch(circle)
 
 

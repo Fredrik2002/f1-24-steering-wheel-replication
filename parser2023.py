@@ -9,8 +9,16 @@ class Listener:
     def __init__(self, port=20777, adress="127.0.0.1", redirect=0, redirect_port=20777):
         self.port = port
         self.socket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
-        self.socket.bind(('', port))
-        self.socket.setblocking(0)
+        running = True
+        while running:
+            try:
+                self.socket.bind(('', self.port))
+                self.socket.setblocking(0)
+                running = False
+            except OSError:
+                print(f"OSError : Port {self.port} is already used by another processus")
+                print(f"Listening on port {self.port+1}")
+                self.port+=1
         self.address = adress
         self.redirect = redirect
         self.redirect_port = redirect_port

@@ -1,17 +1,23 @@
 import json
-from ttkbootstrap import Toplevel, Entry, Label
-from tkinter import Message, Button
+from ttkbootstrap import Toplevel, Entry, Label, IntVar, Checkbutton
+from tkinter import Message, Button, LEFT
 import os
 import sys
 
 script_directory = os.path.dirname(os.path.abspath(sys.argv[0]))
+
+color_dict = {
+    0:"#13FE13",
+    1:"#13FE13",
+    2:"blue",
+    3:"yellow"
+}
 
 def packet_lap_data_management(self, packet):
         self.last_lap_time = packet.m_lap_data[self.index].m_last_lap_time_in_ms
         self.lap_num = packet.m_lap_data[self.index].m_current_lap_num
         self.sc_delta = round(packet.m_lap_data[self.index].m_safety_car_delta, 3)
 
-        update_labels(self)
         self.rotate()
 
 def packet_car_setup_management(self, packet):
@@ -29,6 +35,7 @@ def packet_telemetry_management(self, packet):
 def packet_car_status_management(self, packet):
     self.ers_pourcentage = round(packet.m_car_status_data[self.index].m_ers_store_energy/40_000)
     self.ers_mode = packet.m_car_status_data[self.index].m_ers_deploy_mode
+    self.vehicleFiaFlag = packet.m_car_status_data[self.index].m_vehicle_fia_flags
 
 def update_labels(self):
     if self.gear == 0:
@@ -56,7 +63,7 @@ def conversion(millis):
     else:
         return f"{seconds}.{millis}"
 
-def port_selection(dictionnary_settings, listener, PORT):
+def port_selection(dictionnary_settings, self):
     win = Toplevel()
     win.grab_set()
     win.wm_title("Port Selection")
@@ -66,21 +73,73 @@ def port_selection(dictionnary_settings, listener, PORT):
     e.grid(row=1, column=0, padx=30)
 
     def button():
-        PORT[0] = e.get()
-        if not PORT[0].isdigit() or not 1000 <= int(PORT[0]) <= 65536:
+        if not e.get().isdigit() or not 1000 <= int(e.get()) <= 65536:
             Message(win, text="The PORT must be an integer between 1000 and 65536", fg="red", font=("Arial", 16)).grid(
                 row=3, column=0)
         else:
-            listener.socket.close()
-            listener.port = int(PORT[0])
-            listener.reset()
+            self.PORT = e.get()
+            self.listener.socket.close()
+            self.listener.port = int(self.PORT)
+            self.listener.reset()
             Label(win, text="").grid(row=3, column=0)
-            dictionnary_settings["port"] = str(PORT[0])
+            dictionnary_settings["port"] = str(self.PORT)
             with open(script_directory+"/settings.txt", "w") as f:
+                json.dump(dictionnary_settings, f)
+
+    win.bind('<Return>', lambda e: button())
+    win.bind('<KP_Enter>', lambda e: button())
+    b = Button(win, text="Confirm", font=("Arial", 16), command=button)
+    b.grid(row=2, column=0, pady=10)
+    b = Button(win, text="Reset wheel", font=("Arial", 16), command=self.reset)
+    b.grid(row=3, column=0, pady=10)
+
+def UDP_Redirect(dictionnary_settings, self):
+    win = Toplevel()
+    win.grab_set()
+    win.wm_title("UDP Redirect")
+    var1 = IntVar(value=dictionnary_settings["redirect_active"])
+    checkbutton = Checkbutton(win, text="UDP Redirect", variable=var1, onvalue=1, offvalue=0)
+    checkbutton.grid(row=0, column=0, sticky="W", padx=30, pady=10)
+    Label(win, text="IP Address", font=("Arial", 16), justify=LEFT).grid(row=1, column=0, pady=10)
+    e1 = Entry(win, font=("Arial", 16))
+    e1.insert(0, dictionnary_settings["ip_adress"])
+    e1.grid(row=2, column=0)
+    Label(win, text="Port", font=("Arial", 16)).grid(row=3, column=0, pady=(10, 5))
+    e2 = Entry(win, font=("Arial", 16))
+    e2.insert(0, dictionnary_settings["redirect_port"])
+    e2.grid(row=4, column=0, padx=30)
+
+    def button():
+        redirect_port = e2.get()
+        if not redirect_port.isdigit() or not 1000 <= int(redirect_port) <= 65536:
+            Message(win, text="The PORT must be an integer between 1000 and 65536", fg="red", font=("Arial", 16)).grid(
+                row=6, column=0)
+        elif not valid_ip_address(e1.get()):
+            Label(win, text="IP Address incorrect", foreground="red", font=("Arial", 16)).grid(
+                row=6, column=0)
+        else:
+            self.listener.port = self.PORT
+            self.listener.redirect = int(var1.get())
+            self.listener.adress = e1.get()
+            self.listener.redirect_port = int(e2.get())
+            Label(win, text="").grid(row=3, column=0)
+
+            dictionnary_settings["redirect_active"] = var1.get()
+            dictionnary_settings["ip_adress"] = e1.get()
+            dictionnary_settings["redirect_port"] = e2.get()
+            with open("settings.txt", "w") as f:
                 json.dump(dictionnary_settings, f)
             win.destroy()
 
     win.bind('<Return>', lambda e: button())
     win.bind('<KP_Enter>', lambda e: button())
     b = Button(win, text="Confirm", font=("Arial", 16), command=button)
-    b.grid(row=2, column=0, pady=10)
+    b.grid(row=5, column=0, pady=10)
+
+def valid_ip_address(adress):
+    s = adress.split(".")
+    drapeau = len(s)==4
+    for element in s:
+        if not (element.isdigit() and 0<=int(element)<=255):
+            drapeau = False
+    return drapeau

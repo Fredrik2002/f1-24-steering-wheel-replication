@@ -15,8 +15,7 @@ This application replicates the movement of the driver's steering wheel
     - SC & VSC delta times
     - ERS Deployment mode
     - All 4 tyres inner temperature 
-- Setting tab to select the port you are receiving the datas on
+- Setting tab 
+    - Select the port you are receiving the datas on
+    - Enable UDP Redirection to another IP Address & Port (Ability to redirect to yourself)
 - Font size adjustating to the window size
-
-### To do list :
-- Add flags state on side LEDs

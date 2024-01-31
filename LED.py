@@ -23,6 +23,16 @@ LED_positions = [(-0.302, 0.558), #0.0435
                  (0.2651, 0.56),
                  (0.3083, 0.557)]
 
+side_leds_positions = [
+    (-0.4, 0.50),
+    (-0.4, 0.455),
+    (-0.4, 0.41),
+
+    (0.4, 0.50),
+    (0.4, 0.455),
+    (0.4, 0.41)
+]
+
 class LED(patches.Circle):
     def __init__(self, x, y, color) -> None:
         super().__init__((x, y), RADIUS, facecolor=color)
