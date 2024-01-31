@@ -19,3 +19,12 @@ This application replicates the movement of the driver's steering wheel
     - Select the port you are receiving the datas on
     - Enable UDP Redirection to another IP Address & Port (Ability to redirect to yourself)
 - Font size adjustating to the window size
+
+### How to use :
+- Install the following packages via the pip install command : ttkbootstrap, matplotlib, numpy
+- Run main.py
+
+### To Do List :
+- Fixer les messages d'erreurs qui se superpose
+- Rajouter un try à la lecture du dictionnaire 
+- Rajouter un bouton : Remettre le port par défaut

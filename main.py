@@ -20,6 +20,13 @@ import time
 CENTRE_ROUGE = (0.195, 0.17)
 CENTRE_VERT = (0.3, 0.17)
 
+function_dict = {
+    2:packet_lap_data_management,
+    5:packet_car_setup_management,
+    6:packet_telemetry_management,
+    7:packet_car_status_management
+}
+
 script_directory = os.path.dirname(os.path.abspath(sys.argv[0]))
 if exists(script_directory+"/settings.txt"):
     try:
@@ -44,8 +51,8 @@ else: #If settings.txt has been deleted, we recreate it
 
 class RotationApp:
     def __init__(self, master : tk.Tk):
-        self.PORT = [dictionnary_settings['port']]
-        self.listener = Listener(port=int(self.PORT[0]))
+        self.PORT = dictionnary_settings['port']
+        self.listener = Listener(port=int(self.PORT))
 
         self.master = master
         self.master.title("SF-23 Steering Wheel Replication")
@@ -128,15 +135,9 @@ class RotationApp:
             if a is not None:
                 header, packet = a
                 self.index = header.m_player_car_index
-                match header.m_packet_id:
-                    case 2:
-                        packet_lap_data_management(self, packet)
-                    case 5:
-                        packet_car_setup_management(self, packet)
-                    case 6:
-                        packet_telemetry_management(self, packet)
-                    case 7:
-                        packet_car_status_management(self, packet)
+                if header.m_packet_id in [2,5,6,7]:
+                    function_dict[header.m_packet_id](self, packet)
+                    
             self.master.update()
             self.master.update_idletasks()
         quit()

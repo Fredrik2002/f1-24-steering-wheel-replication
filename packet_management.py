@@ -77,9 +77,9 @@ def port_selection(dictionnary_settings, self):
             Message(win, text="The PORT must be an integer between 1000 and 65536", fg="red", font=("Arial", 16)).grid(
                 row=3, column=0)
         else:
-            self.PORT = e.get()
+            self.PORT = int(e.get())
             self.listener.socket.close()
-            self.listener.port = int(self.PORT)
+            self.listener.port = self.PORT
             self.listener.reset()
             Label(win, text="").grid(row=3, column=0)
             dictionnary_settings["port"] = str(self.PORT)
@@ -112,16 +112,17 @@ def UDP_Redirect(dictionnary_settings, self):
     def button():
         redirect_port = e2.get()
         if not redirect_port.isdigit() or not 1000 <= int(redirect_port) <= 65536:
-            Message(win, text="The PORT must be an integer between 1000 and 65536", fg="red", font=("Arial", 16)).grid(
+            Message(win, text="The PORT must be an integer between 1000 and 65536", fg="red", bg="white", font=("Arial", 16)).grid(
                 row=6, column=0)
         elif not valid_ip_address(e1.get()):
-            Label(win, text="IP Address incorrect", foreground="red", font=("Arial", 16)).grid(
+            Message(win, text="IP Address incorrect", fg="red", bg="white", font=("Arial", 16)).grid(
                 row=6, column=0)
         else:
-            self.listener.port = self.PORT
+            self.listener.port = int(self.PORT)
             self.listener.redirect = int(var1.get())
             self.listener.adress = e1.get()
             self.listener.redirect_port = int(e2.get())
+            self.listener.reset()
             Label(win, text="").grid(row=3, column=0)
 
             dictionnary_settings["redirect_active"] = var1.get()
