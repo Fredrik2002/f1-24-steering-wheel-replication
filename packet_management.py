@@ -109,14 +109,14 @@ def UDP_Redirect(dictionnary_settings, self):
     e2.insert(0, dictionnary_settings["redirect_port"])
     e2.grid(row=4, column=0, padx=30)
 
+    message : Message = Message(win, text="", fg="red", bg="white", font=("Arial", 16))
+    message.grid(row=6, column=0)
     def button():
         redirect_port = e2.get()
         if not redirect_port.isdigit() or not 1000 <= int(redirect_port) <= 65536:
-            Message(win, text="The PORT must be an integer between 1000 and 65536", fg="red", bg="white", font=("Arial", 16)).grid(
-                row=6, column=0)
+            message.config(text="The PORT must be an integer between 1000 and 65536")
         elif not valid_ip_address(e1.get()):
-            Message(win, text="IP Address incorrect", fg="red", bg="white", font=("Arial", 16)).grid(
-                row=6, column=0)
+            message.config(text="IP Address incorrect")
         else:
             self.listener.port = int(self.PORT)
             self.listener.redirect = int(var1.get())

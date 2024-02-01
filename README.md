@@ -25,6 +25,4 @@ This application replicates the movement of the driver's steering wheel
 - Run main.py
 
 ### To Do List :
-- Fixer les messages d'erreurs qui se superpose
-- Rajouter un try à la lecture du dictionnaire 
 - Rajouter un bouton : Remettre le port par défaut
