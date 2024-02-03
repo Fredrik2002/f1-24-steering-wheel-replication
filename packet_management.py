@@ -85,6 +85,7 @@ def port_selection(dictionnary_settings, self):
             dictionnary_settings["port"] = str(self.PORT)
             with open(script_directory+"/settings.txt", "w") as f:
                 json.dump(dictionnary_settings, f)
+            win.destroy()
 
     win.bind('<Return>', lambda e: button())
     win.bind('<KP_Enter>', lambda e: button())
@@ -117,6 +118,8 @@ def UDP_Redirect(dictionnary_settings, self):
             message.config(text="The PORT must be an integer between 1000 and 65536")
         elif not valid_ip_address(e1.get()):
             message.config(text="IP Address incorrect")
+        elif int(redirect_port)==self.listener.port and e1.get()=="127.0.0.1" and int(var1.get()):
+            message.config(text="Can't redirect datas to localhost on the same port")
         else:
             self.listener.port = int(self.PORT)
             self.listener.redirect = int(var1.get())
