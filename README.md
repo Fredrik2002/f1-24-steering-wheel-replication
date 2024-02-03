@@ -22,3 +22,5 @@ This application replicates the movement of the driver's steering wheel
     - Select the port you are receiving the datas on
     - Enable UDP Redirection to another IP Address & Port (Ability to redirect to yourself)
 - Font size adjustating to the window size
+
+Download the .exe version at : https://www.racedepartment.com/downloads/sf23-steering-wheel-f1-23-telemetry.66759/
