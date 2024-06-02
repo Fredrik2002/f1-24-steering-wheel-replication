@@ -2,6 +2,9 @@
 
 This application replicates the movement of the driver's steering wheel
 
+![Capture d'écran 2024-02-03 151858](https://github.com/Fredrik2002/Steering-wheel/assets/86866135/08925157-8dec-45ee-9291-baa7408dd5f4)
+![wheel2](https://github.com/Fredrik2002/Steering-wheel/assets/86866135/941385e2-c6c0-45ab-90eb-f38beaa47131)
+
 ### Features :
 - Fully functionnal LEDs
 - Steering wheel rotation according to games inputs
@@ -20,10 +23,4 @@ This application replicates the movement of the driver's steering wheel
     - Enable UDP Redirection to another IP Address & Port (Ability to redirect to yourself)
 - Font size adjustating to the window size
 
-### How to use :
-- Install the following packages via the pip install command : ttkbootstrap, matplotlib, numpy
-- Run main.py
-
-### To Do List :
-- Prendre des captures d'écran avec les paramètres
-- Tester une dernière fois
+Download the .exe version at : https://www.racedepartment.com/downloads/sf23-steering-wheel-f1-23-telemetry.66759/
