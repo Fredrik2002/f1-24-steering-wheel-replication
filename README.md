@@ -1,4 +1,4 @@
-## Replication of SF-23 Steering Wheel working with F1 23 Telemetry
+## Replication of SF-23 Steering Wheel working with F1 24 Telemetry
 
 This application replicates the movement of the driver's steering wheel
 
