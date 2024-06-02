@@ -8,13 +8,12 @@ import matplotlib.patches as patches
 import matplotlib.pyplot as plt
 import numpy as np
 from math import cos, sin
-from parser2023 import Listener
+from parser2024 import Listener
 from LED import *
 from packet_management import *
 import os
 from os.path import exists
 import sys
-import time
 
 
 CENTRE_ROUGE = (0.195, 0.17)
@@ -92,7 +91,7 @@ class RotationApp:
         self.tyres_temp = [100]*4
         self.lap_num = 0
         self.sc_delta = 0
-        self.revLightBitValue = "111111111111111"
+        self.revLightBitValue = 0xffff
         self.vehicleFiaFlag = 0
         self.list_cercles : list[LED] = []
         self.side_leds : list[LED] = []
@@ -114,7 +113,7 @@ class RotationApp:
         self.tyres_temp = [100]*4
         self.lap_num = 0
         self.sc_delta = 0
-        self.revLightBitValue = "111111111111111"
+        self.revLightBitValue = 0xffff
         self.vehicleFiaFlag = 0
 
         self.rotate()
@@ -140,7 +139,6 @@ class RotationApp:
                     
             self.master.update()
             self.master.update_idletasks()
-        quit()
         
         
     def rotate(self):
@@ -164,16 +162,18 @@ class RotationApp:
             self.rectangle_rouge.set_width(0.21)
         self.rectangle_rouge.set_transform(trans_rouge + self.ax.transData)
         self.rectangle_vert.set_transform(trans_vert + self.ax.transData)
-        l = len(self.revLightBitValue)
 
         #REV Lights
-        for i, circle in enumerate(self.list_cercles):
-            if i>=l or self.revLightBitValue[-1-i]=="0":
+        
+        for circle in self.list_cercles:
+            if not self.revLightBitValue&1:
                 circle.set_visible(False)
             else:
                 r, a = circle.r, circle.init_angle
                 circle.set_center((r*cos(angle_r+a), r*sin(angle_r+a)))
                 circle.set_visible(True)
+            self.revLightBitValue = self.revLightBitValue >> 1
+                
 
         #Side LEDs
         
@@ -244,7 +244,6 @@ class RotationApp:
             circle = LED(*LED_positions[i], color)
             self.list_cercles.append(circle)
             self.ax.add_patch(circle)
-
         for i in range(6):
             circle = LED(*side_leds_positions[i], "yellow")
             self.side_leds.append(circle)

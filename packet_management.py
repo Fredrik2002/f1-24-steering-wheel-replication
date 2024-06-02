@@ -29,7 +29,7 @@ def packet_telemetry_management(self, packet):
     self.speed = packet.m_car_telemetry_data[self.index].m_speed
     self.rpm = packet.m_car_telemetry_data[self.index].m_engine_rpm
     self.revLightPercent = packet.m_car_telemetry_data[self.index].m_rev_lights_percent
-    self.revLightBitValue = bin(packet.m_car_telemetry_data[self.index].m_rev_lights_bit_value)[2:]
+    self.revLightBitValue = packet.m_car_telemetry_data[self.index].m_rev_lights_bit_value
     self.tyres_temp = packet.m_car_telemetry_data[self.index].m_tyres_inner_temperature
     
 def packet_car_status_management(self, packet):
@@ -69,7 +69,7 @@ def port_selection(dictionnary_settings, self):
     win.wm_title("Port Selection")
     Label(win, text="Receiving PORT :", font=("Arial", 16)).grid(row=0, column=0, sticky="we", padx=30)
     e = Entry(win, font=("Arial", 16))
-    e.insert(0, dictionnary_settings["port"])
+    e.insert(0, self.listener.port)
     e.grid(row=1, column=0, padx=30)
 
     def button():
